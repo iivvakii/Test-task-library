@@ -38,6 +38,14 @@ public class MemberController {
         return memberService.updateMember(id, member);
     }
 
+    @PostMapping("/{memberId}/borrow/{bookId}")
+    public void borrowBook(@PathVariable long bookId, @PathVariable long memberId) {
+        memberService.borrowBook(bookId, memberId);
+    }
 
+    @PostMapping("/{memberId}/return/{bookId}")
+    public void returnBook(@PathVariable long bookId, @PathVariable long memberId) {
+        memberService.returnBook(bookId, memberId);
+    }
 
 }

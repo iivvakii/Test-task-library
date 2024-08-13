@@ -10,4 +10,8 @@ public interface MemberService {
     Member addMember(Member member);
     void deleteMember(Long member);
     Member updateMember(Long id, Member member);
+
+    void borrowBook(Long memberId, Long bookId);
+
+    void returnBook(Long memberId, Long bookId);
 }

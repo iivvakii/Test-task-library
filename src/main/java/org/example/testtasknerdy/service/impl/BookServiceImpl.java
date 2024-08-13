@@ -27,11 +27,12 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book add(Book book) {
-        Book book1 = findByTitleAndAuthor(book.getTitle(), book.getAuthor());
-        if(book1 != null) {
-            book1.setAmount(book1.getAmount() + 1);
-            return update(book1.getId(), book1);
+        Optional<Book> book1 = findByTitleAndAuthor(book.getTitle(), book.getAuthor());
+        if (book1.isPresent()) {
+            book1.get().setAmount(book1.get().getAmount() + 1);
+            return update(book1.get().getId(), book1.get());
         }
+        book.setAmount(book.getAmount() + 1);
         return bookRepository.save(book);
     }
 
@@ -43,10 +44,18 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void delete(Long id) {
-        if (findById(id) != null) {bookRepository.deleteById(id);}
+        Book book = findById(id);
+        Optional<Book> book1 = findByTitleAndAuthor(book.getTitle(), book.getAuthor());
+        if (book1.isPresent() && book1.get().getAmount() > 0) {
+            book1.get().setAmount(book1.get().getAmount() - 1);
+            update(book1.get().getId(), book1.get());
+        } else {
+            bookRepository.deleteById(id);
+        }
+
     }
 
-    private Book findByTitleAndAuthor(String title, String author) {
-        return bookRepository.findByTitleAndAuthor(title, author).get();
+    private Optional<Book> findByTitleAndAuthor(String title, String author) {
+        return bookRepository.findByTitleAndAuthor(title, author);
     }
 }
