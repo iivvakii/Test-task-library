@@ -1,5 +1,6 @@
 package org.example.testtasknerdy.service;
 
+import org.example.testtasknerdy.dto.BorrowedBookInfoDto;
 import org.example.testtasknerdy.entity.Book;
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface BookService {
     void delete(Long id);
 
     List<String> getDistinctBorrowedBookTitles();
+
+    List<BorrowedBookInfoDto> findDistinctBorrowedBooksWithCount();
 }

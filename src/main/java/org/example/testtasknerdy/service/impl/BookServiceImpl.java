@@ -1,6 +1,7 @@
 package org.example.testtasknerdy.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.testtasknerdy.dto.BorrowedBookInfoDto;
 import org.example.testtasknerdy.entity.Book;
 import org.example.testtasknerdy.exception.BookInUseException;
 import org.example.testtasknerdy.exception.notFound.BookNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +73,14 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public List<String> getDistinctBorrowedBookTitles() {
         return bookRepository.findDistinctBorrowedBookTitles();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BorrowedBookInfoDto> findDistinctBorrowedBooksWithCount() {
+        return bookRepository.findDistinctBorrowedBooksWithCount().stream()
+                .map(result -> new BorrowedBookInfoDto((String) result[0], (Long) result[1]))
+                .collect(Collectors.toList());
     }
 
     private Optional<Book> findByTitleAndAuthor(String title, String author) {

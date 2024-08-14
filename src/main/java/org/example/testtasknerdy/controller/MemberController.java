@@ -1,6 +1,7 @@
 package org.example.testtasknerdy.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.testtasknerdy.entity.Book;
 import org.example.testtasknerdy.entity.Member;
 import org.example.testtasknerdy.service.MemberService;
 import org.springframework.web.bind.annotation.*;
@@ -48,4 +49,9 @@ public class MemberController {
         memberService.returnBook(bookId, memberId);
     }
 
+
+    @GetMapping("/{name}/borrowed-books")
+    public List<Book> getBorrowedBooks(@PathVariable String name) {
+        return memberService.findAllBooksByMemberName(name);
+    }
 }

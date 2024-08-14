@@ -12,6 +12,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("select b from Book b where b.title = ?1 and b.author = ?2")
     Optional<Book> findByTitleAndAuthor(String title, String author);
 
-    @Query("SELECT DISTINCT b.title FROM Member m JOIN m.borrowedBooks b")
+    @Query("select distinct b.title from Member m join m.borrowedBooks b")
     List<String> findDistinctBorrowedBookTitles();
+
+    @Query("select b.title, COUNT(b.title) from Member m join m.borrowedBooks b group by b.title")
+    List<Object[]> findDistinctBorrowedBooksWithCount();
 }

@@ -10,6 +10,7 @@ import org.example.testtasknerdy.service.BookService;
 import org.example.testtasknerdy.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -86,5 +87,11 @@ public class MemberServiceImpl implements MemberService {
 
         member.getBorrowedBooks().remove(book);
         memberRepository.save(member);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> findAllBooksByMemberName(String memberName) {
+        return memberRepository.findAllBooksByMemberName(memberName).getBorrowedBooks();
     }
 }
