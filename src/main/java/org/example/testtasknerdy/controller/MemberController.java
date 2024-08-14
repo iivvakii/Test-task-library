@@ -1,7 +1,7 @@
 package org.example.testtasknerdy.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.testtasknerdy.model.Member;
+import org.example.testtasknerdy.entity.Member;
 import org.example.testtasknerdy.service.MemberService;
 import org.springframework.web.bind.annotation.*;
 

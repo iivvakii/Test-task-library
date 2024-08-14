@@ -1,9 +1,10 @@
 package org.example.testtasknerdy.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.example.testtasknerdy.model.Book;
-import org.example.testtasknerdy.model.Member;
+import org.example.testtasknerdy.entity.Book;
+import org.example.testtasknerdy.entity.Member;
+import org.example.testtasknerdy.exception.BookNotAvailableException;
+import org.example.testtasknerdy.exception.notFound.MemberNotFoundException;
 import org.example.testtasknerdy.repository.MemberRepository;
 import org.example.testtasknerdy.service.BookService;
 import org.example.testtasknerdy.service.MemberService;
@@ -28,7 +29,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member findById(Long id) {
-        return memberRepository.findById(id).orElse(null);
+        return memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException(id));
     }
 
     @Override
@@ -38,12 +39,18 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void deleteMember(Long id) {
-        memberRepository.delete(findById(id));
+        Member member = findById(id);
+        if (member.getBorrowedBooks().isEmpty()) {
+            memberRepository.delete(findById(id));
+        } else {
+            throw new BookNotAvailableException(id);
+        }
     }
 
     @Override
     public Member updateMember(Long id, Member member) {
-        if(findById(id) != null) member.setId(id);
+        Member memberToUpdate = findById(id);
+        memberToUpdate.setName(member.getName());
         return memberRepository.save(member);
     }
 
@@ -52,15 +59,8 @@ public class MemberServiceImpl implements MemberService {
         Member member = findById(memberId);
         Book book = bookService.findById(bookId);
 
-        if (member == null)
-            throw new EntityNotFoundException("Member not found");
-
-        if (book == null)
-            throw new EntityNotFoundException("Book not found");
-
-
         if (book.getAmount() <= 0)
-            throw new IllegalStateException("Book not available");
+            throw new BookNotAvailableException(bookId);
 
         if (member.getBorrowedBooks().size() >= borrowLimit)
             throw new IllegalStateException("Too many borrowed books");
@@ -76,12 +76,6 @@ public class MemberServiceImpl implements MemberService {
     public void returnBook(Long memberId, Long bookId) {
         Member member = findById(memberId);
         Book book = bookService.findById(bookId);
-
-        if (member == null)
-            throw new EntityNotFoundException("Member not found");
-
-        if (book == null)
-            throw new EntityNotFoundException("Book not found");
 
         if (!member.getBorrowedBooks().contains(book)) {
             throw new IllegalStateException("Member did not borrow this book");

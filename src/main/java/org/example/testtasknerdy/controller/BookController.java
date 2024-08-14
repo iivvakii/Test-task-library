@@ -1,7 +1,7 @@
 package org.example.testtasknerdy.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.testtasknerdy.model.Book;
+import org.example.testtasknerdy.entity.Book;
 import org.example.testtasknerdy.service.BookService;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +36,10 @@ public class BookController {
     @PutMapping("/{id}")
     public Book updateBook(@PathVariable long id, @RequestBody Book book) {
         return bookService.update(id, book);
+    }
+
+    @GetMapping("/borrowed/distinct-titles")
+    public List<String> getDistinctBorrowedBookTitles() {
+        return bookService.getDistinctBorrowedBookTitles();
     }
 }

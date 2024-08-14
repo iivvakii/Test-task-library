@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class TestTaskNerdyApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(TestTaskNerdyApplication.class, args);
     }
 

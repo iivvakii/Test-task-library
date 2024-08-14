@@ -1,6 +1,6 @@
 package org.example.testtasknerdy.service;
 
-import org.example.testtasknerdy.model.Member;
+import org.example.testtasknerdy.entity.Member;
 
 import java.util.List;
 
