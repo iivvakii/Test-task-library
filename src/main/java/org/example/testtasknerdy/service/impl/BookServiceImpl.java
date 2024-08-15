@@ -1,7 +1,8 @@
 package org.example.testtasknerdy.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.testtasknerdy.dto.BorrowedBookInfoDto;
+import lombok.extern.log4j.Log4j2;
+import org.example.testtasknerdy.dto.BorrowedBookInfo;
 import org.example.testtasknerdy.entity.Book;
 import org.example.testtasknerdy.exception.BookInUseException;
 import org.example.testtasknerdy.exception.notFound.BookNotFoundException;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
@@ -35,12 +36,20 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book add(Book newBook) {
-        return findByTitleAndAuthor(newBook.getTitle(), newBook.getAuthor())
-                .map(book -> {
-                    book.setAmount(book.getAmount() + 1);
-                    return book;
-                })
-                .orElseGet(() -> bookRepository.save(newBook));
+        try {
+            // Attempt to find the book by title and author
+            Book existingBook = findByTitleAndAuthor(newBook.getTitle(), newBook.getAuthor());
+
+            // If the book is found, update its amount
+            existingBook.setAmount(existingBook.getAmount() + 1);
+            log.info("Book found with title: {} and author: {}. Updated amount to: {}", existingBook.getTitle(), existingBook.getAuthor(), existingBook.getAmount());
+            return existingBook;
+
+        } catch (BookNotFoundException e) {
+            // If the book is not found, save the new book
+            log.info("Book not found with title: {} and author: {}. Saving new book.", newBook.getTitle(), newBook.getAuthor());
+            return bookRepository.save(newBook);
+        }
     }
 
     @Override
@@ -49,7 +58,7 @@ public class BookServiceImpl implements BookService {
         bookToUpdate.setAuthor(book.getAuthor());
         bookToUpdate.setTitle(book.getTitle());
         bookToUpdate.setAmount(book.getAmount());
-        return bookRepository.save(book);
+        return bookRepository.save(bookToUpdate);
     }
 
     @Override
@@ -59,7 +68,7 @@ public class BookServiceImpl implements BookService {
         if (book.getAmount() > 1) {
             book.setAmount(book.getAmount() - 1);
         } else {
-            if (book.getMembersWhoBorrowed().isEmpty()) {
+            if (book.getMembers().isEmpty()) {
                 bookRepository.delete(book);
             } else {
                 throw new BookInUseException(id);
@@ -77,13 +86,14 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BorrowedBookInfoDto> findDistinctBorrowedBooksWithCount() {
+    public List<BorrowedBookInfo> findDistinctBorrowedBooksWithCount() {
         return bookRepository.findDistinctBorrowedBooksWithCount().stream()
-                .map(result -> new BorrowedBookInfoDto((String) result[0], (Long) result[1]))
+                .map(result -> new BorrowedBookInfo(result.getTitle(), result.getCount()))
                 .collect(Collectors.toList());
     }
 
-    private Optional<Book> findByTitleAndAuthor(String title, String author) {
-        return bookRepository.findByTitleAndAuthor(title, author);
+
+    public Book findByTitleAndAuthor(String title, String author) {
+        return bookRepository.findByTitleAndAuthor(title, author).orElseThrow(() -> new BookNotFoundException(author, title));
     }
 }

@@ -1,12 +1,12 @@
 package org.example.testtasknerdy.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.testtasknerdy.entity.listener.BookLimitListener;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners({AuditingEntityListener.class})
+@EntityListeners({AuditingEntityListener.class, BookLimitListener.class})
 public class Member {
 
     @Id
@@ -33,13 +33,18 @@ public class Member {
     @CreatedDate
     private LocalDateTime membershipDate;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "member_book",
             joinColumns = @JoinColumn(name = "memeber_id"),
             inverseJoinColumns = @JoinColumn(name = "book_id")
     )
-    @JsonIgnore
-    private List<Book> borrowedBooks = new ArrayList<>();
+//    @JsonIgnore
+    private List<Book> books = new ArrayList<>();
 
+    public Member(String name, LocalDateTime membershipDate, List<Book> books) {
+        this.name = name;
+        this.membershipDate = membershipDate;
+        this.books = books;
+    }
 }
